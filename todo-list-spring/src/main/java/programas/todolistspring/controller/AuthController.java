@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import programas.todolistspring.dto.AuthResponse;
 import programas.todolistspring.dto.LoginRequest;
 import programas.todolistspring.dto.RegisterRequest;
+import programas.todolistspring.repository.TokenBlacklistRepository;
 import programas.todolistspring.service.AuthService;
 
 
@@ -14,10 +15,13 @@ import programas.todolistspring.service.AuthService;
 public class AuthController {
 
     private final AuthService authenticationService;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
-    public AuthController(AuthService authenticationService) {
+    public AuthController(AuthService authenticationService, TokenBlacklistRepository tokenBlacklistRepository) {
         this.authenticationService = authenticationService;
+        this.tokenBlacklistRepository = tokenBlacklistRepository;
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
@@ -30,8 +34,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        // En JWT, el logout se maneja del lado del cliente eliminando el token
-        return ResponseEntity.ok("Sesión cerrada exitosamente");
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        tokenBlacklistRepository.blacklistToken(token);
+        return ResponseEntity.ok("Token invalidado correctamente");
     }
 }

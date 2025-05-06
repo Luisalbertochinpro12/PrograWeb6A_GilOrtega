@@ -47,5 +47,4 @@ public class TareaDTO {
         this.completada = completada;
     }
 
-    // Getters y setters
 }
